@@ -1,66 +1,66 @@
 # Tweet Variations Generator + Scheduler
 
-מערכת מלאה ליצירת תוכן ל-X (טוויטר):
-- 🤖 לוקח רעיון (בעברית או אנגלית) → מחזיר **5 וריאציות באנגלית** בזוויות שונות (Hook / Story / List / Question / Insight)
-- 🎯 בחירה אינטראקטיבית עם אפשרות "הרץ מחדש"
-- 📊 **היסטוריה אוטומטית** ב-CSV + סטטיסטיקות לפי סגנון
-- 📅 **תזמון אוטומטי** דרך Typefully (אופציונלי)
-- 🌐 אפשר לכתוב את הרעיון בעברית — הטוויטים תמיד באנגלית
+A complete content system for X (Twitter):
+- 🤖 Takes any idea (in English or Hebrew) → returns **5 English tweet variations** from different angles (Hook / Story / List / Question / Insight)
+- 🎯 Interactive selection with a "regenerate" option
+- 📊 **Automatic history** saved to CSV + per-style statistics
+- 📅 **Automatic scheduling** via Typefully (optional)
+- 🌐 You can write the idea in Hebrew — the tweets always come back in English
 
-## התקנה מהירה (3 שלבים)
+## Quick Start (3 steps)
 
 ```bash
-# 1. התקנה
+# 1. Install
 pip install anthropic
 
-# 2. מפתח חובה (מ-console.anthropic.com)
+# 2. Required API key (from console.anthropic.com)
 export ANTHROPIC_API_KEY="sk-ant-..."
 
-# 3. אופציונלי — לתזמון אוטומטי (מ-typefully.com/settings/integrations)
+# 3. Optional — for auto-scheduling (from typefully.com/settings/integrations)
 export TYPEFULLY_API_KEY="..."
 ```
 
-טיפ: הוסף את ה-`export`-ים ל-`~/.zshrc` כדי שזה יהיה קבוע.
+Tip: add the `export` lines to `~/.zshrc` so they persist across sessions.
 
-## שימוש
+## Usage
 
-### יצירת וריאציות
+### Generate variations
 ```bash
-python tweet_variations.py "מה למדתי השנה על בנייה של מוצרים"
+python tweet_variations.py "What I learned this year about building products"
 ```
 
-תקבל 5 וריאציות, ואז:
-- **1–5** — בחר וריאציה
-- **r** — הרץ שוב לקבל 5 חדשות
-- **q** — צא בלי לשמור
+You'll get 5 variations, then:
+- **1–5** — pick a variation
+- **r** — regenerate (5 fresh ones)
+- **q** — quit without saving
 
-אחרי שבחרת:
-- **s** — שמור להיסטוריה (ברירת מחדל)
-- **c** — הדפס לעותק מהיר + שמור
-- **n** — תזמן ב-Typefully בחריץ הבא הפנוי *(אם הגדרת מפתח)*
-- **d** — תזמן לתאריך ספציפי *(אם הגדרת מפתח)*
+After you pick one:
+- **s** — save to history (default)
+- **c** — print for quick copy + save
+- **n** — schedule in Typefully at the next free slot *(if API key is set)*
+- **d** — schedule for a specific date *(if API key is set)*
 
-### אפשר לכתוב את הרעיון בעברית
-הטוויטים תמיד יחזרו באנגלית, גם אם תכתוב את הרעיון בעברית:
+### Hebrew input works too
+The tweets always come back in English, even if you write the idea in Hebrew:
 
 ```bash
 python tweet_variations.py "המחשבה שלי על אוטומציה ושיווק"
 # → 5 tweets in English
 
-# מצב אינטראקטיבי לרעיון ארוך
+# Interactive mode for longer ideas
 python tweet_variations.py
-# (הקלד את הרעיון, Enter פעמיים לסיום)
+# (type the idea, press Enter twice to finish)
 ```
 
-### צפייה בהיסטוריה וסטטיסטיקות
+### View history and stats
 ```bash
-python tweet_variations.py --history          # 20 אחרונים
+python tweet_variations.py --history          # last 20
 python tweet_variations.py --history --limit 50
 
-python tweet_variations.py --stats            # פילוח לפי סגנון + פעולה
+python tweet_variations.py --stats            # breakdown by style + action
 ```
 
-## דוגמת פלט
+## Sample Output
 
 ```
 ────────────────────────────────────────────────────────────
@@ -76,30 +76,30 @@ in confident language. The same founder who succeeded by
 Two years ago I launched 4 products in 12 months. Three failed...
 ```
 
-## קבצים שהמערכת יוצרת
+## Files the system creates
 
-- `history.csv` — היסטוריה מלאה (timestamp, idea, style, char_count, tweet, action, scheduled_for)
-- אין בסיס נתונים — הכל פשוט בקובץ אחד שאפשר לפתוח ב-Excel/Numbers
+- `history.csv` — full history (timestamp, idea, style, char_count, tweet, action, scheduled_for)
+- No database — everything lives in a single CSV you can open in Excel/Numbers
 
-## ארכיטקטורה — איך זה עובד מאחורי הקלעים
+## Architecture — how it works
 
-1. **מודל:** `claude-opus-4-7` עם streaming (למניעת timeouts)
-2. **Structured outputs:** JSON schema מבטיח שתמיד יחזרו בדיוק 5 וריאציות בפורמט תקין — אין parsing שבור
-3. **System prompt:** מנחה את המודל לחמש זוויות ספציפיות + מגביל באורך, ללא hashtags/emojis מיותרים
-4. **Typefully API:** קריאת REST פשוטה (`urllib`, ללא תלויות נוספות), תומך ב-`next-free-slot` או ISO 8601
+1. **Model:** `claude-opus-4-7` with streaming (avoids HTTP timeouts)
+2. **Structured outputs:** a JSON schema guarantees you always get exactly 5 variations in valid format — no broken parsing
+3. **System prompt:** steers the model toward five specific angles, limits length, and avoids unnecessary hashtags/emojis
+4. **Typefully API:** simple REST call (uses `urllib`, zero extra dependencies); supports `next-free-slot` or ISO 8601
 
-## פתרון בעיות
+## Troubleshooting
 
-| בעיה | פתרון |
-|------|--------|
+| Problem | Fix |
+|---------|-----|
 | `ANTHROPIC_API_KEY not set` | `export ANTHROPIC_API_KEY="sk-ant-..."` |
-| הוריאציה מעל 280 תווים | יופיע סימן ⚠️ — תקן ידנית או בקש `r` להרצה חדשה |
-| Typefully לא מופיע באפשרויות | בדוק `echo $TYPEFULLY_API_KEY` |
-| `Typefully API error 401` | המפתח שגוי או פג תוקף |
+| Variation over 280 chars | A ⚠️ warning appears — edit manually, or hit `r` to regenerate |
+| Typefully option missing | Check `echo $TYPEFULLY_API_KEY` |
+| `Typefully API error 401` | Key is wrong or expired |
 
-## מה הלאה (רעיונות להרחבה)
+## Ideas for future extensions
 
-- Cache prompt על system message כדי לחסוך עלות בריצות חוזרות
-- ניתוח קורלציה בין סגנון לבין ביצועים בפועל (לאחר חיבור ל-X Analytics)
-- Web UI פשוט עם FastAPI אם רוצים גישה מהנייד
-- מצב thread (סדרת טוויטים מקושרת) במקום פוסט בודד
+- Cache the system prompt to reduce cost on repeated runs
+- Correlate style with actual performance (after wiring up X Analytics)
+- Simple FastAPI web UI for mobile access
+- Thread mode (a connected series of tweets instead of a single post)
