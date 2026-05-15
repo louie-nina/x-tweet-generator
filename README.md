@@ -40,17 +40,7 @@ After you pick one:
 - **n** — schedule in Typefully at the next free slot *(if API key is set)*
 - **d** — schedule for a specific date *(if API key is set)*
 
-### Hebrew input works too
-The tweets always come back in English, even if you write the idea in Hebrew:
 
-```bash
-python tweet_variations.py "המחשבה שלי על אוטומציה ושיווק"
-# → 5 tweets in English
-
-# Interactive mode for longer ideas
-python tweet_variations.py
-# (type the idea, press Enter twice to finish)
-```
 
 ### View history and stats
 ```bash
